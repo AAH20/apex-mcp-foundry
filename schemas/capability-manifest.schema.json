@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://a2zsoc.com/schemas/apex-mcp-foundry-capability-manifest.schema.json",
+  "title": "Apex MCP Foundry Capability Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repository_id", "status", "approved_handlers"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "repository_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"},
+    "status": {"enum": ["draft", "approved"]},
+    "approved_handlers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["repo.overview", "repo.search_symbols", "repo.get_symbol"]}
+    },
+    "available_handlers": {
+      "type": "array",
+      "items": {"enum": ["repo.overview", "repo.search_symbols", "repo.get_symbol"]}
+    },
+    "review_notes": {"type": "string", "maxLength": 2000}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "draft"}}, "required": ["status"]},
+      "then": {"properties": {"approved_handlers": {"maxItems": 0}}}
+    }
+  ]
+}

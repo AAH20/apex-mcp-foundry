@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "repository_id": "example-repo",
+  "status": "approved",
+  "approved_handlers": [
+    "repo.overview",
+    "repo.search_symbols",
+    "repo.get_symbol"
+  ],
+  "available_handlers": [
+    "repo.overview",
+    "repo.search_symbols",
+    "repo.get_symbol"
+  ],
+  "review_notes": "Read-only static analysis only. No source bodies or code execution are exposed."
+}

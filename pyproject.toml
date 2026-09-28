@@ -1,0 +1,9 @@
+[project]
+name = "apex-mcp-foundry"
+version = "0.1.0"
+description = "Local-first, approved repository capabilities served through MCP"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.unittest]
+start-directory = "tests"
