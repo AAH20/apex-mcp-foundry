@@ -24,6 +24,26 @@ HANDLERS = {
             "qualified_name": {"type": "string", "minLength": 1},
         }, "required": ["qualified_name"], "additionalProperties": False},
     },
+    "repo.dependency_graph": {
+        "description": "Export source-grounded import/call dependency graph with polynomial-time cycle detection.",
+        "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
+    },
+    "repo.budgeted_selection": {
+        "description": "Select submodular capabilities within a token budget with canonical prefix ordering.",
+        "inputSchema": {"type": "object", "properties": {
+            "query": {"type": "string", "minLength": 1},
+            "token_budget": {"type": "integer", "minimum": 64, "maximum": 32000},
+            "mode": {"type": "string"},
+        }, "required": ["query"], "additionalProperties": False},
+    },
+    "repo.execute_adapter": {
+        "description": "Execute an operator-approved, sandboxed Python function with timeout bounds.",
+        "inputSchema": {"type": "object", "properties": {
+            "module_rel_path": {"type": "string", "minLength": 1},
+            "callable_name": {"type": "string", "minLength": 1},
+            "arguments": {"type": "object"},
+        }, "required": ["module_rel_path", "callable_name", "arguments"], "additionalProperties": False},
+    },
 }
 
 
@@ -164,4 +184,31 @@ class RepositoryCatalog:
             return analyzer.search_symbols(arguments["query"], limit=arguments.get("limit", 20))
         if handler == "repo.get_symbol":
             return analyzer.get_symbol(arguments["qualified_name"])
+        if handler == "repo.dependency_graph":
+            from .graph import DependencyGraphAnalyzer
+            return DependencyGraphAnalyzer(self.roots[rid], max_files=self.max_files).build_graph()
+        if handler == "repo.budgeted_selection":
+            from .knapsack import SubmodularKnapsackSelector
+            selector = SubmodularKnapsackSelector(token_budget=arguments.get("token_budget", 2048))
+            mode = arguments.get("mode", "submodular")
+            return selector.select(self.capabilities(), arguments["query"], max_tokens=arguments.get("token_budget"), mode=mode)
+        if handler == "repo.execute_adapter":
+            from .sandbox import SandboxedAdapterRunner
+            runner = SandboxedAdapterRunner(self.roots[rid])
+            return runner.execute(arguments["module_rel_path"], arguments["callable_name"], arguments["arguments"])
         raise KeyError(f"No callable implementation for {handler!r}")
+
+    def dependency_graph(self, rid: str):
+        from .graph import DependencyGraphAnalyzer
+        return DependencyGraphAnalyzer(self.roots[rid], max_files=self.max_files).build_graph()
+
+    def select_budgeted(self, query: str, token_budget: int = 2048, mode: str = "submodular"):
+        from .knapsack import SubmodularKnapsackSelector
+        selector = SubmodularKnapsackSelector(token_budget=token_budget)
+        return selector.select(self.capabilities(), query, max_tokens=token_budget, mode=mode)
+
+    def execute_adapter(self, rid: str, module_rel_path: str, callable_name: str, arguments: dict):
+        from .sandbox import SandboxedAdapterRunner
+        runner = SandboxedAdapterRunner(self.roots[rid])
+        return runner.execute(module_rel_path, callable_name, arguments)
+

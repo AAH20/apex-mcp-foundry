@@ -1,9 +1,14 @@
 [project]
 name = "apex-mcp-foundry"
-version = "0.1.0"
-description = "Local-first, approved repository capabilities served through MCP"
+version = "0.2.0"
+description = "Universal In-Memory MCP Capability & Execution Hypervisor: Budgeted Submodular Knapsack, Dependency Graph Cycle Detection, Sandboxed Execution, and On-Demand Repository Synthesizer"
+readme = "README.md"
+license = { text = "Apache-2.0" }
 requires-python = ">=3.10"
 dependencies = []
+
+[project.scripts]
+apex-mcp-foundry = "apex_mcp_foundry.cli:main"
 
 [tool.unittest]
 start-directory = "tests"
